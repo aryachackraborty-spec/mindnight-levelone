@@ -260,45 +260,18 @@ Submit confidential reviews.
 
 ## Successful Contract Compilation
 
-> Add a screenshot here showing:
+> Add a screenshot here showing:<img width="522" height="199" alt="image" src="https://github.com/user-attachments/assets/4156980e-b349-44b8-91f2-69a11028744d" />
 
-```
-Compiling 2 circuits:
-
-post
-
-takeDown
-
-Overall progress [====================]
-```
-
-Example:
-
-```
-docs/images/compile-success.png
-```
 
 ---
 
 ## Successful Contract Deployment
 
 Add a screenshot showing
-
-```
 Contract deployed successfully
 
-Contract Address:
+<img width="556" height="479" alt="image" src="https://github.com/user-attachments/assets/70c08e57-5e70-4864-9a36-dcdee0928fd1" />
 
-mn_contract_xxxxxxxxxxxxxxxxx
-```
-
-Example:
-
-```
-docs/images/deployment-success.png
-```
-
----
 
 # 🔄 Workflow
 
