@@ -2,11 +2,157 @@ pragma language_version >= 0.23;
 
 import CompactStandardLibrary;
 
-// Public ledger state - visible on blockchain
-export ledger message: Opaque<"string">;
+struct ReviewPublicState {
+    employee_hash: Bytes<32>,
+    reviewer_hash: Bytes<32>,
+    status: Uint<8>,      // 0 = Pending, 1 = Submitted, 2 = Acknowledged, 3 = Appealed
+    timestamp: Uint<64>,
+    commitment: Bytes<32>,
+    exists: Boolean
+}
 
-// Circuit to store a message on the blockchain
-// The message will be publicly visible
-export circuit storeMessage(customMessage: Opaque<"string">): [] {
-    message = disclose(customMessage);
+struct PrivateReview {
+    rating: Uint<8>,
+    strengths: Bytes<32>,
+    areas_for_improvement: Bytes<32>,
+    comments: Bytes<32>,
+    goals: Bytes<32>,
+    promotion_recommendation: Boolean,
+    salary_recommendation: Uint<64>
+}
+
+export ledger reviews: Map<Bytes<32>, ReviewPublicState>;
+
+// 1. Submit a new performance review
+export circuit submitReview(
+    review_id: Bytes<32>,
+    employee_hash: Bytes<32>,
+    reviewer_hash: Bytes<32>,
+    rating: Uint<8>,
+    strengths: Bytes<32>,
+    areas_for_improvement: Bytes<32>,
+    comments: Bytes<32>,
+    goals: Bytes<32>,
+    promotion_recommendation: Boolean,
+    salary_recommendation: Uint<64>,
+    timestamp: Uint<64>
+): [] {
+    assert(!reviews.member(disclose(review_id)), "review already exists");
+
+    const commitment = persistentHash<PrivateReview>(PrivateReview {
+        rating: rating,
+        strengths: strengths,
+        areas_for_improvement: areas_for_improvement,
+        comments: comments,
+        goals: goals,
+        promotion_recommendation: promotion_recommendation,
+        salary_recommendation: salary_recommendation
+    });
+
+    reviews.insert(disclose(review_id), ReviewPublicState {
+        employee_hash: disclose(employee_hash),
+        reviewer_hash: disclose(reviewer_hash),
+        status: disclose(1), // 1 = Submitted
+        timestamp: disclose(timestamp),
+        commitment: disclose(commitment),
+        exists: disclose(true)
+    });
+}
+
+// 2. Acknowledge a review by providing its private details to verify commitment
+export circuit acknowledgeReview(
+    review_id: Bytes<32>,
+    rating: Uint<8>,
+    strengths: Bytes<32>,
+    areas_for_improvement: Bytes<32>,
+    comments: Bytes<32>,
+    goals: Bytes<32>,
+    promotion_recommendation: Boolean,
+    salary_recommendation: Uint<64>
+): [] {
+    assert(reviews.member(disclose(review_id)), "review does not exist");
+    const review = reviews.lookup(disclose(review_id));
+    assert(review.status == 1, "review must be in Submitted status to acknowledge");
+
+    const computed_commitment = persistentHash<PrivateReview>(PrivateReview {
+        rating: rating,
+        strengths: strengths,
+        areas_for_improvement: areas_for_improvement,
+        comments: comments,
+        goals: goals,
+        promotion_recommendation: promotion_recommendation,
+        salary_recommendation: salary_recommendation
+    });
+
+    assert(computed_commitment == review.commitment, "witness verification failed (commitment mismatch)");
+
+    reviews.insert(disclose(review_id), ReviewPublicState {
+        employee_hash: review.employee_hash,
+        reviewer_hash: review.reviewer_hash,
+        status: disclose(2), // 2 = Acknowledged
+        timestamp: review.timestamp,
+        commitment: review.commitment,
+        exists: review.exists
+    });
+}
+
+// 3. Submit an appeal on an acknowledged review
+export circuit submitAppeal(
+    review_id: Bytes<32>,
+    rating: Uint<8>,
+    strengths: Bytes<32>,
+    areas_for_improvement: Bytes<32>,
+    comments: Bytes<32>,
+    goals: Bytes<32>,
+    promotion_recommendation: Boolean,
+    salary_recommendation: Uint<64>,
+    appeal_message: Bytes<32> // Appeal hash commitment or small content representation
+): [] {
+    assert(reviews.member(disclose(review_id)), "review does not exist");
+    const review = reviews.lookup(disclose(review_id));
+    assert(review.status == 2, "review must be in Acknowledged status to appeal");
+
+    const computed_commitment = persistentHash<PrivateReview>(PrivateReview {
+        rating: rating,
+        strengths: strengths,
+        areas_for_improvement: areas_for_improvement,
+        comments: comments,
+        goals: goals,
+        promotion_recommendation: promotion_recommendation,
+        salary_recommendation: salary_recommendation
+    });
+
+    assert(computed_commitment == review.commitment, "witness verification failed (commitment mismatch)");
+
+    // In a production contract, we could also store the appeal message commitment.
+    // For simplicity, we transition the status to Appealed.
+    reviews.insert(disclose(review_id), ReviewPublicState {
+        employee_hash: review.employee_hash,
+        reviewer_hash: review.reviewer_hash,
+        status: disclose(3), // 3 = Appealed
+        timestamp: review.timestamp,
+        commitment: review.commitment,
+        exists: review.exists
+    });
+}
+
+// 4. Return review status
+export circuit getReviewStatus(review_id: Bytes<32>): Uint<8> {
+    assert(reviews.member(disclose(review_id)), "review does not exist");
+    return disclose(reviews.lookup(disclose(review_id)).status);
+}
+
+// 5. Update review status directly (for HR workflows or corrections)
+export circuit updateReviewStatus(review_id: Bytes<32>, new_status: Uint<8>): [] {
+    assert(reviews.member(disclose(review_id)), "review does not exist");
+    const review = reviews.lookup(disclose(review_id));
+
+    reviews.insert(disclose(review_id), ReviewPublicState {
+        employee_hash: review.employee_hash,
+        reviewer_hash: review.reviewer_hash,
+        status: disclose(new_status),
+        timestamp: review.timestamp,
+        commitment: review.commitment,
+        exists: review.exists
+    });
 }
