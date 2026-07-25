@@ -220,6 +220,8 @@ Submit confidential reviews.
 ---
 
 # 📸 Screenshots
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/d74649b5-8048-4b73-bd36-68aaf17a96b5" />
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/7eccdba8-8fb1-4939-9de6-7af891095108" />
 
 ## Successful Contract Compilation
 
