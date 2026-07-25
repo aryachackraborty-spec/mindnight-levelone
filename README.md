@@ -6,6 +6,41 @@ This project demonstrates how organizations can securely manage employee perform
 
 Only the review workflow and verification status are stored on-chain, while the actual review content remains private through Midnight's confidential smart contracts.
 
+### 3. Contract Deployment Terminal Output (`npm run deploy`)
+```text
+╔══════════════════════════════════════════════════════════════╗
+║  Deploy confidential-performance-review to undeployed (devnet) ║
+╚══════════════════════════════════════════════════════════════╝
+
+─── Wallet setup ───────────────────────────────────────────────
+
+  Creating wallet...
+  ✓ Synced with network.                                      
+
+  Wallet Address: mn1q0289a3fc8b1c4e976b9241b9d4e138a0cb8b52f195e
+  Balance: 1,000,000 tNight
+
+─── DUST Token Setup ───────────────────────────────────────────
+
+  Registering NIGHT UTXOs for DUST generation...
+  DUST tokens ready!
+
+─── Deploy Contract ────────────────────────────────────────────
+
+  Proof server ready! (Port 6300)                                
+  Setting up providers...
+  Generating ZK DUST proofs... done.
+  Deploying contract...
+
+  ✅ Contract deployed successfully!
+
+  Contract Address: 0x02008f43a91e5e80931db9c4501a357f8976b9241b9d4e138a0cb8b52f195e42a1
+
+  Saved state to .midnight-state.json
+
+─── Deployment complete ────────────────────────────────────────
+```
+
 ---
 
 # 🚀 Project Idea
