@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   Shield, 
   PlusCircle, 
@@ -111,7 +111,6 @@ export default function App() {
   const [zkModalOpen, setZkModalOpen] = useState(false);
   const [zkSteps, setZkSteps] = useState<{ label: string; status: 'pending' | 'loading' | 'success' | 'failed' }[]>([]);
   const [zkStepIndex, setZkStepIndex] = useState(0);
-  const [pendingAction, setPendingAction] = useState<(() => Promise<void>) | null>(null);
 
   // Toast Notifications State
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
@@ -220,52 +219,38 @@ export default function App() {
 
   // Trigger ZK Flow Modal
   const triggerZkFlow = (steps: string[], finalAction: () => Promise<void>) => {
-    setZkSteps(steps.map(label => ({ label, status: 'pending' })));
+    setZkSteps(steps.map(label => ({ label, status: 'pending' as const })));
     setZkStepIndex(0);
     setZkModalOpen(true);
-    setPendingAction(() => finalAction);
+
+    let stepCounter = 0;
+    const totalSteps = steps.length;
+
+    const interval = setInterval(() => {
+      stepCounter++;
+      if (stepCounter <= totalSteps) {
+        setZkStepIndex(stepCounter);
+      }
+
+      if (stepCounter >= totalSteps) {
+        clearInterval(interval);
+        const executeTransaction = async () => {
+          try {
+            await finalAction();
+            addToast('success', 'Transaction Confirmed', 'ZK proof verified and committed on Midnight ledger!');
+          } catch (err: any) {
+            addToast('error', 'Transaction Failed', err?.message || 'Failed to submit transaction');
+          } finally {
+            setTimeout(() => {
+              setZkModalOpen(false);
+              fetchReviews(userHash, role);
+            }, 600);
+          }
+        };
+        executeTransaction();
+      }
+    }, 1100);
   };
-
-  // Step progress animation effect
-  useEffect(() => {
-    if (!zkModalOpen || zkSteps.length === 0 || zkStepIndex >= zkSteps.length) return;
-
-    const currentStep = zkSteps[zkStepIndex];
-    if (currentStep.status === 'pending') {
-      const updated = [...zkSteps];
-      updated[zkStepIndex].status = 'loading';
-      setZkSteps(updated);
-
-      const duration = zkStepIndex === 1 ? 1800 : 1000;
-      const timer = setTimeout(() => {
-        const completed = [...zkSteps];
-        completed[zkStepIndex].status = 'success';
-        setZkSteps(completed);
-        setZkStepIndex(prev => prev + 1);
-      }, duration);
-
-      return () => clearTimeout(timer);
-    }
-  }, [zkModalOpen, zkSteps, zkStepIndex]);
-
-  // Execute action after ZK proof completion
-  useEffect(() => {
-    if (zkModalOpen && zkStepIndex === zkSteps.length && pendingAction) {
-      const runAction = async () => {
-        try {
-          await pendingAction();
-          addToast('success', 'Transaction Confirmed', 'ZK proof verified and committed on Midnight ledger!');
-        } catch (err: any) {
-          addToast('error', 'Transaction Failed', err?.message || 'Failed to submit transaction');
-        } finally {
-          setZkModalOpen(false);
-          setPendingAction(null);
-          fetchReviews(userHash, role);
-        }
-      };
-      runAction();
-    }
-  }, [zkModalOpen, zkStepIndex, zkSteps.length, pendingAction, userHash, role]);
 
   // Submit Review Handler from Wizard
   const handleWizardSubmit = async (formData: {

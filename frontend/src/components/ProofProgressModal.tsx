@@ -46,16 +46,16 @@ export const ProofProgressModal: React.FC<ProofProgressModalProps> = ({
         <div className="space-y-3 text-left bg-black/30 p-4 rounded-2xl border border-white/10">
           {steps.map((step, idx) => {
             const isCurrent = idx === stepIndex;
-            const isPassed = idx < stepIndex || step.status === 'success';
+            const isPassed = idx < stepIndex;
 
             return (
               <div
                 key={idx}
                 className={`flex items-center justify-between p-2.5 rounded-xl border text-xs transition-all ${
-                  isCurrent
-                    ? 'bg-indigo-600/20 border-indigo-400 text-white font-semibold'
-                    : isPassed
+                  isPassed
                     ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                    : isCurrent
+                    ? 'bg-indigo-600/20 border-indigo-400 text-white font-semibold'
                     : 'bg-white/5 border-transparent text-gray-500'
                 }`}
               >
@@ -72,6 +72,9 @@ export const ProofProgressModal: React.FC<ProofProgressModalProps> = ({
 
                 {isCurrent && (
                   <span className="text-[10px] uppercase font-bold text-indigo-400 animate-pulse">Computing</span>
+                )}
+                {isPassed && (
+                  <span className="text-[10px] uppercase font-bold text-emerald-400">Verified</span>
                 )}
               </div>
             );
