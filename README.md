@@ -22,6 +22,7 @@ Managers can submit confidential employee evaluations where:
 
 Meanwhile, the blockchain only stores verifiable public workflow information, allowing organizations to track review progress without exposing confidential employee data.
 
+youtube link:https://youtu.be/QBEuNeAophs
 ---
 
 # ✨ Features
