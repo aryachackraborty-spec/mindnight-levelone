@@ -288,7 +288,23 @@ Review Status Updated
 
 ✅ Product proposal
 
----
+# 🎯 Midnight Level 2 Requirements
+
+✅ Lace wallet connect / disconnect implemented,
+✅ Circuit called successfully from the frontend,
+✅ An observable privacy behavior (something proven without being shown),
+✅ Contract deployed to Preprod with a verifiable address,
+✅ Minimum 8 meaningful commits.
+
+
+# 🎯 Midnight Level 3 Requirements
+
+✅Fully functional dApp that meaningfully uses Midnight’s privacy model,
+✅Minimum 3 tests passing,
+✅CI/CD pipeline running (workflow file + passing runs),
+✅Approved idea submitted from the provided idea list,
+✅Minimum 10 meaningful commits.
+
 
 # 🔮 Future Improvements
 
